@@ -1,1 +1,593 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EcoSort AI — Rethinking Waste Track</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          emerald: {
+            50:'#ecfdf5',100:'#d1fae5',200:'#a7f3d0',300:'#6ee7b7',400:'#34d399',
+            500:'#10b981',600:'#059669',700:'#047857',800:'#065f46',900:'#064e3b',950:'#022c22'
+          },
+          lime: {300:'#bef264',400:'#a3e635',500:'#84cc16',600:'#65a30d'}
+        },
+        fontFamily: {
+          sans: ['Inter','ui-sans-serif','system-ui','sans-serif'],
+          mono: ['"JetBrains Mono"','ui-monospace','monospace']
+        }
+      }
+    }
+  }
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
+  body { font-family:'Inter',sans-serif; }
+  .scan-ring { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .pulse-dot { animation: pulseDot 1.6s ease-in-out infinite; }
+  @keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.8)} }
+  .fade-up { animation: fadeUp .5s ease both; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+  .scan-beam { animation: beam 1.4s ease-in-out infinite; }
+  @keyframes beam { 0%{top:0;opacity:.9} 50%{top:92%;opacity:.4} 100%{top:0;opacity:.9} }
+  .dropzone-active { border-color:#84cc16 !important; background:#f7fee7 !important; transform:scale(1.01); }
+  .progress-fill { transition: width 1.2s cubic-bezier(.22,1,.36,1); }
+  .counter-card { box-shadow:0 8px 30px -10px rgba(6,78,59,.18); }
+  .custom-scroll::-webkit-scrollbar { width:6px; }
+  .custom-scroll::-webkit-scrollbar-thumb { background:#a7f3d0; border-radius:3px; }
+</style>
+</head>
+<body class="bg-white text-slate-800 antialiased">
 
+<!-- ══════════════ NAVBAR ══════════════ -->
+<nav class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-emerald-800 flex items-center justify-center">
+        <i data-lucide="recycle" class="w-5 h-5 text-lime-400"></i>
+      </div>
+      <div>
+        <span class="font-extrabold text-lg text-emerald-900 tracking-tight">EcoSort <span class="text-emerald-600">AI</span></span>
+        <span class="hidden sm:inline-block ml-2 text-[10px] font-bold uppercase tracking-widest bg-lime-400/20 text-emerald-700 border border-lime-500/30 rounded-full px-2 py-0.5">Rethinking Waste Track</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 sm:gap-4">
+      <a href="#dashboard" class="hidden md:block text-sm font-medium text-slate-600 hover:text-emerald-700 transition">Impact</a>
+      <a href="#rescue" class="hidden md:block text-sm font-medium text-slate-600 hover:text-emerald-700 transition">Food Rescue</a>
+      <a href="#guide" class="hidden md:block text-sm font-medium text-slate-600 hover:text-emerald-700 transition">Bin Guide</a>
+      <button onclick="openModal()" class="flex items-center gap-2 bg-emerald-800 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">
+        <i data-lucide="flask-conical" class="w-4 h-4 text-lime-400"></i> STEM Methodology
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════ HERO / SCANNER ══════════════ -->
+<header class="bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-800 text-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-14 sm:py-20 grid lg:grid-cols-2 gap-10 items-center">
+    <div class="fade-up">
+      <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-3 py-1 text-xs font-semibold mb-5">
+        <span class="w-2 h-2 rounded-full bg-lime-400 pulse-dot"></span> AI-Powered Material Classification
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-black leading-tight tracking-tight">
+        Sort waste with <span class="text-lime-400">science</span>,<br/>not guesswork.
+      </h1>
+      <p class="mt-5 text-emerald-100/90 text-lg max-w-xl">
+        Upload any item photo — EcoSort AI identifies the material stream, gives prep steps, and converts every sorted kilogram into measured CO₂e savings and recovered economic value.
+      </p>
+      <div class="mt-7 flex flex-wrap gap-3 text-sm">
+        <div class="flex items-center gap-2 bg-white/10 rounded-lg px-3 py-2"><i data-lucide="scan-line" class="w-4 h-4 text-lime-400"></i> Vision Classifier</div>
+        <div class="flex items-center gap-2 bg-white/10 rounded-lg px-3 py-2"><i data-lucide="leaf" class="w-4 h-4 text-lime-400"></i> CO₂e Engine</div>
+        <div class="flex items-center gap-2 bg-white/10 rounded-lg px-3 py-2"><i data-lucide="coins" class="w-4 h-4 text-lime-400"></i> Value Recovery</div>
+      </div>
+    </div>
+
+    <!-- Scanner Card -->
+    <div class="bg-white text-slate-800 rounded-2xl p-6 shadow-2xl fade-up">
+      <h2 class="font-bold text-emerald-900 flex items-center gap-2 mb-4">
+        <i data-lucide="camera" class="w-5 h-5 text-emerald-600"></i> AI Waste Scanner
+      </h2>
+
+      <!-- Dropzone -->
+      <div id="dropzone" class="relative border-2 border-dashed border-emerald-300 rounded-xl bg-emerald-50/50 h-52 flex flex-col items-center justify-center cursor-pointer transition-all hover:border-emerald-500">
+        <div id="dropzone-idle" class="flex flex-col items-center gap-2 text-center px-4">
+          <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center"><i data-lucide="upload-cloud" class="w-6 h-6 text-emerald-700"></i></div>
+          <p class="font-semibold text-emerald-900">Drag &amp; drop an item photo</p>
+          <p class="text-xs text-slate-500">or <span class="text-emerald-700 font-semibold underline">click to upload</span> · PNG / JPG</p>
+        </div>
+        <!-- scanning state -->
+        <div id="dropzone-scanning" class="hidden absolute inset-0 flex-col items-center justify-center bg-emerald-50/90 rounded-xl overflow-hidden">
+          <div class="absolute left-0 right-0 h-1 bg-lime-400 shadow-[0_0_12px_#84cc16] scan-beam"></div>
+          <div class="scan-ring w-10 h-10 border-4 border-emerald-200 border-t-emerald-700 rounded-full"></div>
+          <p class="mt-3 text-sm font-semibold text-emerald-900">Analyzing material stream…</p>
+        </div>
+        <!-- preview state -->
+        <div id="dropzone-preview" class="hidden absolute inset-0">
+          <img id="preview-img" class="w-full h-full object-cover rounded-xl" alt="Uploaded waste item" />
+          <div class="absolute bottom-2 right-2 bg-emerald-900/80 text-white text-[11px] font-semibold px-2 py-1 rounded">Re-scan</div>
+        </div>
+        <input type="file" id="file-input" accept="image/*" class="hidden" />
+      </div>
+
+      <!-- Sample buttons -->
+      <p class="text-xs font-bold uppercase tracking-widest text-slate-400 mt-5 mb-2">Try a sample item</p>
+      <div class="grid grid-cols-3 gap-2">
+        <button onclick="scanSample('pet')" class="group border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 rounded-lg p-2.5 transition text-center">
+          <i data-lucide="milk" class="w-6 h-6 mx-auto text-emerald-700"></i>
+          <span class="block text-[11px] font-bold mt-1.5 text-slate-700 group-hover:text-emerald-800">Plastic PET Bottle</span>
+        </button>
+        <button onclick="scanSample('battery')" class="group border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 rounded-lg p-2.5 transition text-center">
+          <i data-lucide="zap" class="w-6 h-6 mx-auto text-amber-600"></i>
+          <span class="block text-[11px] font-bold mt-1.5 text-slate-700 group-hover:text-emerald-800">Lithium Battery</span>
+        </button>
+        <button onclick="scanSample('pizza')" class="group border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 rounded-lg p-2.5 transition text-center">
+          <i data-lucide="pizza" class="w-6 h-6 mx-auto text-orange-500"></i>
+          <span class="block text-[11px] font-bold mt-1.5 text-slate-700 group-hover:text-emerald-800">Greasy Pizza Box</span>
+        </button>
+      </div>
+
+      <!-- Result Panel -->
+      <div id="scan-result" class="hidden mt-5 border border-slate-200 rounded-xl p-4 bg-slate-50 fade-up">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p id="sr-material" class="font-extrabold text-emerald-900 text-lg"></p>
+            <p id="sr-stream" class="text-xs font-bold text-slate-500 mt-0.5"></p>
+          </div>
+          <span id="sr-badge" class="text-[11px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full"></span>
+        </div>
+        <div class="mt-3">
+          <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Prep Steps</p>
+          <ul id="sr-steps" class="text-sm text-slate-700 space-y-1"></ul>
+        </div>
+        <div class="mt-3 flex items-center gap-2 text-sm">
+          <i data-lucide="map-pin" class="w-4 h-4 text-emerald-600"></i>
+          <span id="sr-disposal" class="text-slate-700 font-medium"></span>
+        </div>
+        <div class="mt-4 grid grid-cols-2 gap-2">
+          <div class="bg-white border border-slate-200 rounded-lg p-2.5 text-center">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Value Recovered</p>
+            <p id="sr-value" class="font-black text-emerald-700 text-lg"></p>
+          </div>
+          <div class="bg-white border border-lime-300 rounded-lg p-2.5 text-center">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">EcoPoints</p>
+            <p id="sr-points" class="font-black text-lime-600 text-lg"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════ 3. IMPACT DASHBOARD ══════════════ -->
+<section id="dashboard" class="bg-slate-50 border-y border-slate-200 py-14">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+      <div>
+        <h2 class="text-3xl font-black text-emerald-950 tracking-tight">Live STEM Impact Dashboard</h2>
+        <p class="text-slate-500 mt-1">Every scan, claim, and simulation feeds the carbon &amp; value engine in real time.</p>
+      </div>
+      <button onclick="simulatePilot()" class="flex items-center justify-center gap-2 bg-lime-500 hover:bg-lime-400 text-emerald-950 font-extrabold px-5 py-3 rounded-xl transition shadow-lg shadow-lime-500/25">
+        <i data-lucide="activity" class="w-5 h-5"></i> Simulate 30-Day Pilot Data
+      </button>
+    </div>
+
+    <!-- Metric cards -->
+    <div class="grid md:grid-cols-3 gap-5">
+      <div class="counter-card bg-white border border-slate-200 rounded-2xl p-6">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Total Waste Diverted</p>
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center"><i data-lucide="trash-2" class="w-5 h-5 text-emerald-700"></i></div>
+        </div>
+        <p class="mt-3 text-4xl font-black text-emerald-900"><span id="m-waste">0.0</span> <span class="text-lg text-slate-400 font-bold">kg</span></p>
+        <div class="mt-4 h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div id="bar-waste" class="progress-fill h-full bg-emerald-600 rounded-full" style="width:0%"></div>
+        </div>
+        <p class="mt-2 text-xs text-slate-400">Pilot target: 1,000 kg</p>
+      </div>
+
+      <div class="counter-card bg-white border border-slate-200 rounded-2xl p-6">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-bold uppercase tracking-widest text-slate-400">CO₂ Emissions Prevented</p>
+          <div class="w-10 h-10 rounded-xl bg-lime-100 flex items-center justify-center"><i data-lucide="cloud-off" class="w-5 h-5 text-lime-600"></i></div>
+        </div>
+        <p class="mt-3 text-4xl font-black text-emerald-900"><span id="m-co2">0.0</span> <span class="text-lg text-slate-400 font-bold">kg CO₂e</span></p>
+        <div class="mt-4 h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div id="bar-co2" class="progress-fill h-full bg-lime-500 rounded-full" style="width:0%"></div>
+        </div>
+        <p class="mt-2 text-xs text-slate-400">Pilot target: 2,000 kg CO₂e</p>
+      </div>
+
+      <div class="counter-card bg-white border border-slate-200 rounded-2xl p-6">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Economic Value Recovered</p>
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center"><i data-lucide="dollar-sign" class="w-5 h-5 text-emerald-700"></i></div>
+        </div>
+        <p class="mt-3 text-4xl font-black text-emerald-900">$<span id="m-value">0.00</span></p>
+        <div class="mt-4 h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div id="bar-value" class="progress-fill h-full bg-emerald-800 rounded-full" style="width:0%"></div>
+        </div>
+        <p class="mt-2 text-xs text-slate-400">Pilot target: $750 recovered</p>
+      </div>
+    </div>
+
+    <!-- Activity feed -->
+    <div class="mt-6 bg-white border border-slate-200 rounded-2xl p-5">
+      <p class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-2"><i data-lucide="history" class="w-4 h-4"></i> Live Activity Feed</p>
+      <ul id="activity-feed" class="space-y-2 text-sm max-h-40 overflow-y-auto custom-scroll">
+        <li class="text-slate-400 italic">No activity yet — scan an item or run the simulation.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ 4. FOOD RESCUE ROUTER ══════════════ -->
+<section id="rescue" class="py-14 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <h2 class="text-3xl font-black text-emerald-950 tracking-tight">Surplus Food &amp; Organic Waste Rescue Router</h2>
+    <p class="text-slate-500 mt-1 mb-8">Local cafes and stores post surplus batches — community partners claim pickup before it hits landfill.</p>
+
+    <div class="grid lg:grid-cols-3 gap-8">
+      <!-- Post form -->
+      <form id="post-form" class="bg-emerald-900 text-white rounded-2xl p-6 h-fit lg:sticky lg:top-24">
+        <h3 class="font-bold text-lg flex items-center gap-2"><i data-lucide="plus-circle" class="w-5 h-5 text-lime-400"></i> Post Surplus Batch</h3>
+        <p class="text-emerald-200/80 text-sm mt-1 mb-5">Diverted organics save <strong class="text-lime-300">2.5 kg CO₂e per kg</strong>.</p>
+        <label class="block text-xs font-bold uppercase tracking-widest text-emerald-300 mb-1.5">Item Name</label>
+        <input id="f-item" required placeholder="e.g., 5kg Day-Old Croissants" class="w-full bg-emerald-800 border border-emerald-700 rounded-lg px-3 py-2.5 text-sm placeholder:text-emerald-400/60 focus:outline-none focus:border-lime-400 mb-4" />
+        <label class="block text-xs font-bold uppercase tracking-widest text-emerald-300 mb-1.5">Weight (kg)</label>
+        <input id="f-weight" required type="number" min="0.1" step="0.1" placeholder="e.g., 5" class="w-full bg-emerald-800 border border-emerald-700 rounded-lg px-3 py-2.5 text-sm placeholder:text-emerald-400/60 focus:outline-none focus:border-lime-400 mb-4" />
+        <label class="block text-xs font-bold uppercase tracking-widest text-emerald-300 mb-1.5">Location</label>
+        <input id="f-location" required placeholder="e.g., Riverside Bakery" class="w-full bg-emerald-800 border border-emerald-700 rounded-lg px-3 py-2.5 text-sm placeholder:text-emerald-400/60 focus:outline-none focus:border-lime-400 mb-5" />
+        <button type="submit" class="w-full bg-lime-500 hover:bg-lime-400 text-emerald-950 font-extrabold py-3 rounded-xl transition">Publish to Rescue Board</button>
+      </form>
+
+      <!-- Rescue board -->
+      <div class="lg:col-span-2">
+        <p class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Live Rescue Board</p>
+        <div id="rescue-board" class="grid sm:grid-cols-2 gap-4"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ 5. WASTE SEARCH GUIDE ══════════════ -->
+<section id="guide" class="py-14 bg-slate-50 border-t border-slate-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <h2 class="text-3xl font-black text-emerald-950 tracking-tight">Instant Household Waste Guide</h2>
+    <p class="text-slate-500 mt-1 mb-6">Type any common item to get its exact bin stream — and the science behind it.</p>
+    <div class="relative max-w-xl">
+      <i data-lucide="search" class="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2"></i>
+      <input id="search-input" placeholder="Search: styrofoam, batteries, coffee cup…" class="w-full bg-white border border-slate-200 rounded-xl pl-12 pr-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm" />
+    </div>
+    <p id="search-count" class="text-xs text-slate-400 mt-3"></p>
+    <div id="guide-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6"></div>
+  </div>
+</section>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer class="bg-emerald-950 text-emerald-200/70 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
+    <div class="flex items-center gap-2">
+      <i data-lucide="recycle" class="w-4 h-4 text-lime-400"></i>
+      <span class="font-bold text-white">EcoSort AI</span> · Rethinking Waste Hackathon Track
+    </div>
+    <p>Built on measured conversion factors — see <button onclick="openModal()" class="underline hover:text-lime-300">STEM Methodology</button>.</p>
+  </div>
+</footer>
+
+<!-- ══════════════ MODAL ══════════════ -->
+<div id="modal-overlay" class="hidden fixed inset-0 z-50 bg-emerald-950/70 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) closeModal()">
+  <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto custom-scroll p-7 fade-up">
+    <div class="flex items-start justify-between mb-5">
+      <div>
+        <h3 class="text-2xl font-black text-emerald-950 flex items-center gap-2"><i data-lucide="flask-conical" class="w-6 h-6 text-emerald-600"></i> STEM Methodology</h3>
+        <p class="text-slate-500 text-sm mt-1">Scientific conversion factors powering every EcoSort AI metric.</p>
+      </div>
+      <button onclick="closeModal()" class="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center"><i data-lucide="x" class="w-5 h-5 text-slate-500"></i></button>
+    </div>
+
+    <div class="space-y-4">
+      <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+        <p class="font-mono text-sm font-bold text-emerald-800 bg-emerald-100 inline-block px-2 py-1 rounded">1 kg PET plastic recycled = 1.5 kg CO₂e saved + $0.35 recovered</p>
+        <p class="text-sm text-slate-600 mt-2">Mechanical recycling of PET avoids virgin resin production. Virgin PET emits ~2.9 kg CO₂e/kg vs. ~1.4 kg for recycled flake — a net saving of ~1.5 kg CO₂e, plus commodity resale value.</p>
+      </div>
+      <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+        <p class="font-mono text-sm font-bold text-emerald-800 bg-emerald-100 inline-block px-2 py-1 rounded">1 kg organic/food waste diverted = 2.5 kg CO₂e saved</p>
+        <p class="text-sm text-slate-600 mt-2">Landfilled food waste anaerobically decomposes into methane (CH₄), a greenhouse gas 28× more potent than CO₂ over 100 years. Composting or rescue avoids those landfill methane emissions entirely.</p>
+      </div>
+      <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+        <p class="font-mono text-sm font-bold text-emerald-800 bg-emerald-100 inline-block px-2 py-1 rounded">1 kg aluminum recycled = 9.0 kg CO₂e saved</p>
+        <p class="text-sm text-slate-600 mt-2">Recycling aluminum uses only ~5% of the energy of smelting new metal from bauxite ore — the single largest carbon lever in household waste.</p>
+      </div>
+      <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+        <p class="font-mono text-sm font-bold text-emerald-800 bg-emerald-100 inline-block px-2 py-1 rounded">1 kg cardboard recycled = 0.9 kg CO₂e saved</p>
+        <p class="text-sm text-slate-600 mt-2">Recycled fibers cut pulp demand and landfill volume. Note: grease-soaked cardboard contaminates paper streams and must be composted instead.</p>
+      </div>
+      <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+        <p class="font-mono text-sm font-bold text-emerald-800 bg-emerald-100 inline-block px-2 py-1 rounded">1 Li-ion battery diverted = 50 EcoPoints (hazard premium)</p>
+        <p class="text-sm text-slate-600 mt-2">Lithium cells can cause landfill fires and leach heavy metals. Certified e-waste hubs recover lithium, cobalt, and nickel for reuse — highest-impact action in the system.</p>
+      </div>
+      <div class="bg-emerald-900 text-emerald-100 rounded-xl p-4">
+        <p class="text-xs font-bold uppercase tracking-widest text-lime-300 mb-2">The Master Formula</p>
+        <p class="font-mono text-sm">Total CO₂e Saved = Σ (kg diverted × material factor)</p>
+        <p class="font-mono text-sm mt-1">Value Recovered = Σ (kg recycled × commodity $/kg)</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="hidden fixed bottom-6 right-6 z-50 bg-emerald-900 text-white text-sm font-semibold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 fade-up">
+  <i data-lucide="check-circle-2" class="w-4 h-4 text-lime-400"></i><span id="toast-msg"></span>
+</div>
+
+<script>
+/* ─────────── STATE ─────────── */
+const state = { waste: 0, co2: 0, value: 0, points: 0 };
+const fmt = n => n.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const fmt$ = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/* ─────────── MODAL ─────────── */
+function openModal(){ document.getElementById('modal-overlay').classList.remove('hidden'); document.body.style.overflow='hidden'; }
+function closeModal(){ document.getElementById('modal-overlay').classList.add('hidden'); document.body.style.overflow=''; }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+/* ─────────── TOAST ─────────── */
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.remove('hidden');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.add('hidden'), 2600);
+}
+
+/* ─────────── DASHBOARD ─────────── */
+let display = { waste: 0, co2: 0, value: 0 };
+function animateNumber(el, from, to, decimals){
+  const dur = 900, start = performance.now();
+  function step(now){
+    const p = Math.min((now-start)/dur, 1);
+    const eased = 1 - Math.pow(1-p, 3);
+    el.textContent = (from + (to-from)*eased).toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    if(p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+function renderDashboard(){
+  animateNumber(document.getElementById('m-waste'), display.waste, state.waste, 1);
+  animateNumber(document.getElementById('m-co2'), display.co2, state.co2, 1);
+  animateNumber(document.getElementById('m-value'), display.value, state.value, 2);
+  display = { ...state };
+  document.getElementById('bar-waste').style.width = Math.min(100, state.waste/10) + '%';
+  document.getElementById('bar-co2').style.width = Math.min(100, state.co2/20) + '%';
+  document.getElementById('bar-value').style.width = Math.min(100, state.value/7.5) + '%';
+}
+function addActivity(text, icon){
+  const feed = document.getElementById('activity-feed');
+  const empty = feed.querySelector('.italic'); if(empty) empty.remove();
+  const li = document.createElement('li');
+  li.className = 'flex items-center gap-2 text-slate-700 fade-up';
+  li.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4 text-emerald-600 shrink-0"></i><span>${text}</span>`;
+  feed.prepend(li);
+  lucide.createIcons();
+  while(feed.children.length > 12) feed.lastChild.remove();
+}
+function applyImpact(waste, co2, value, label, icon){
+  state.waste += waste; state.co2 += co2; state.value += value;
+  renderDashboard();
+  addActivity(label, icon || 'leaf');
+}
+
+/* ─────────── 3. SIMULATE PILOT ─────────── */
+function simulatePilot(){
+  const btn = event.currentTarget;
+  btn.disabled = true;
+  btn.innerHTML = '<div class="scan-ring w-5 h-5 border-2 border-emerald-950/30 border-t-emerald-950 rounded-full"></div> Injecting pilot data…';
+  setTimeout(()=>{
+    applyImpact(420, 890, 315.50, '30-Day Neighborhood Pilot: +420 kg diverted · +890 kg CO₂e · +$315.50', 'building-2');
+    toast('30-day pilot data added to dashboard');
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="activity" class="w-5 h-5"></i> Simulate 30-Day Pilot Data';
+    lucide.createIcons();
+  }, 900);
+}
+
+/* ─────────── 2. SCANNER ─────────── */
+const samples = {
+  pet: {
+    material: 'Plastic — PET #1 (Polyethylene Terephthalate)',
+    stream: 'Recycling Stream · Code 1 · MRF-accepted',
+    badge: 'Recyclable', badgeClass: 'bg-emerald-100 text-emerald-800 border border-emerald-300',
+    steps: ['Empty all liquid', 'Remove cap & label', 'Crush flat to save truck space'],
+    disposal: 'Curbside Recycling Bin (blue)',
+    waste: 0.5, co2: 0.75, value: 0.15, points: 15,
+    icon: 'milk'
+  },
+  battery: {
+    material: 'Lithium-Ion Battery (E-Waste)',
+    stream: 'Hazardous Materials Stream · Li-Ion cell',
+    badge: 'Hazardous', badgeClass: 'bg-amber-100 text-amber-800 border border-amber-300',
+    steps: ['Tape terminals with electrical tape', 'Keep dry & away from heat', 'Do NOT put in regular bin — fire risk'],
+    disposal: 'Drop-off at Certified E-Waste Hub',
+    waste: 0.3, co2: 4.2, value: 0.85, points: 50,
+    icon: 'zap'
+  },
+  pizza: {
+    material: 'Contaminated Cardboard (Grease-Soaked)',
+    stream: 'Split-Sort Stream · fiber + organic fraction',
+    badge: 'Compost / Split-Sort', badgeClass: 'bg-lime-100 text-lime-800 border border-lime-400',
+    steps: ['Tear off clean lid for recycling', 'Put greasy bottom in compost', 'No cheese or food scraps in paper bin'],
+    disposal: 'Split: clean part → Recycling · greasy part → Compost',
+    waste: 0.4, co2: 0.36, value: 0.02, points: 10,
+    icon: 'pizza'
+  }
+};
+
+let scanLock = false;
+function runScanFlow(resultKey, previewImgSrc){
+  if(scanLock) return;
+  scanLock = true;
+  const idle = document.getElementById('dropzone-idle');
+  const scanning = document.getElementById('dropzone-scanning');
+  const preview = document.getElementById('dropzone-preview');
+  const result = document.getElementById('scan-result');
+
+  idle.classList.add('hidden');
+  result.classList.add('hidden');
+  if(previewImgSrc){
+    document.getElementById('preview-img').src = previewImgSrc;
+    preview.classList.remove('hidden');
+  }
+  scanning.classList.remove('hidden');
+  scanning.classList.add('flex');
+
+  setTimeout(()=>{
+    scanning.classList.add('hidden');
+    scanning.classList.remove('flex');
+    showResult(resultKey);
+    scanLock = false;
+  }, 1000);
+}
+function showResult(key){
+  const d = samples[key];
+  const r = document.getElementById('scan-result');
+  document.getElementById('sr-material').textContent = d.material;
+  document.getElementById('sr-stream').textContent = d.stream;
+  const badge = document.getElementById('sr-badge');
+  badge.textContent = d.badge;
+  badge.className = 'text-[11px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ' + d.badgeClass;
+  document.getElementById('sr-steps').innerHTML = d.steps.map(s =>
+    `<li class="flex items-start gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>${s}</li>`).join('');
+  document.getElementById('sr-disposal').textContent = d.disposal;
+  document.getElementById('sr-value').textContent = '$' + d.value.toFixed(2);
+  document.getElementById('sr-points').textContent = '+' + d.points;
+  r.classList.remove('hidden');
+  lucide.createIcons();
+
+  applyImpact(d.waste, d.co2, d.value, `Scanned ${d.material.split('(')[0].trim()} → +${d.waste} kg diverted · +${d.co2} kg CO₂e · +${d.value.toFixed(2)} value · +${d.points} pts`, d.icon);
+  state.points += d.points;
+  toast(`Scan complete: ${d.badge} · +${d.points} EcoPoints`);
+}
+function scanSample(key){ runScanFlow(key, null); }
+
+/* Upload interactions */
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('file-input');
+dropzone.addEventListener('click', ()=> fileInput.click());
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dropzone-active'); });
+dropzone.addEventListener('dragleave', ()=> dropzone.classList.remove('dropzone-active'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.classList.remove('dropzone-active');
+  handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+function handleFile(file){
+  if(!file || !file.type.startsWith('image/')){ toast('Please upload an image file'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    /* Deterministic "AI" pick based on file size for variety */
+    const keys = Object.keys(samples);
+    const pick = keys[file.size % keys.length];
+    runScanFlow(pick, ev.target.result);
+  };
+  reader.readAsDataURL(file);
+  fileInput.value = '';
+}
+
+/* ─────────── 4. RESCUE BOARD ─────────── */
+const rescueData = [
+  { id: 1, item: 'Unsold Artisan Bread', weight: 12, location: 'GreenBean Cafe', claimed: false },
+  { id: 2, item: 'Fresh Produce Surplus', weight: 8, location: 'City Market', claimed: false },
+  { id: 3, item: 'Day-Old Pastry Batch', weight: 6, location: 'Riverside Bakery', claimed: false }
+];
+let rescueId = 4;
+
+function renderRescue(){
+  const board = document.getElementById('rescue-board');
+  board.innerHTML = rescueData.map(b => `
+    <div class="border ${b.claimed ? 'border-slate-200 bg-slate-50 opacity-80' : 'border-slate-200 bg-white'} rounded-2xl p-5 fade-up">
+      <div class="flex items-start justify-between gap-2">
+        <div>
+          <p class="font-extrabold text-emerald-950">${b.weight}kg ${b.item}</p>
+          <p class="text-xs text-slate-500 mt-1 flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-600"></i>${b.location}</p>
+        </div>
+        <span class="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full ${b.claimed ? 'bg-slate-200 text-slate-500' : 'bg-lime-100 text-lime-800 border border-lime-300'}">${b.claimed ? 'Claimed' : 'Available'}</span>
+      </div>
+      <p class="text-xs text-slate-400 mt-3">≈ ${(b.weight*2.5).toFixed(1)} kg CO₂e saved if diverted from landfill</p>
+      ${b.claimed
+        ? `<button disabled class="mt-4 w-full bg-slate-200 text-slate-400 font-bold py-2.5 rounded-xl cursor-not-allowed flex items-center justify-center gap-2"><i data-lucide="check" class="w-4 h-4"></i> Pickup Claimed</button>`
+        : `<button onclick="claimPickup(${b.id})" class="mt-4 w-full bg-emerald-800 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2"><i data-lucide="hand-heart" class="w-4 h-4 text-lime-400"></i> Claim Pickup</button>`}
+    </div>`).join('');
+  lucide.createIcons();
+}
+function claimPickup(id){
+  const b = rescueData.find(x => x.id === id);
+  if(!b || b.claimed) return;
+  b.claimed = true;
+  renderRescue();
+  const co2 = b.weight * 2.5;
+  applyImpact(b.weight, co2, 0, `Rescued ${b.weight}kg ${b.item} from ${b.location} → +${co2.toFixed(1)} kg CO₂e`, 'hand-heart');
+  toast(`Claimed ${b.weight}kg ${b.item} — ${co2.toFixed(1)} kg CO₂e saved`);
+}
+document.getElementById('post-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const item = document.getElementById('f-item').value.trim();
+  const weight = parseFloat(document.getElementById('f-weight').value);
+  const location = document.getElementById('f-location').value.trim();
+  if(!item || !weight || !location) return;
+  rescueData.unshift({ id: rescueId++, item, weight, location, claimed: false });
+  renderRescue();
+  e.target.reset();
+  toast(`${weight}kg "${item}" published to rescue board`);
+  document.getElementById('rescue-board').scrollIntoView({ behavior:'smooth', block:'nearest' });
+});
+
+/* ─────────── 5. WASTE GUIDE ─────────── */
+const guide = [
+  { name: 'Styrofoam (EPS)', bin: 'General Waste', color: 'bg-slate-100 text-slate-600 border-slate-300', reason: 'Expanded polystyrene is 95% air and economically unrecyclable in most facilities — it fragments into microplastics.' },
+  { name: 'Aluminum Can', bin: 'Recycling', color: 'bg-emerald-100 text-emerald-800 border-emerald-300', reason: 'Recycling aluminum uses 95% less energy than new smelting and saves ~9 kg CO₂e per kg.' },
+  { name: 'Glass Jar', bin: 'Recycling', color: 'bg-emerald-100 text-emerald-800 border-emerald-300', reason: 'Glass melts at lower temperatures than raw sand fusion and can be recycled infinitely without quality loss.' },
+  { name: 'Disposable Coffee Cup', bin: 'General Waste', color: 'bg-slate-100 text-slate-600 border-slate-300', reason: 'The plastic polyethylene liner bonds permanently to the paper fiber, making standard cups unrecyclable.' },
+  { name: 'Batteries (AA/AAA)', bin: 'E-Waste Drop-off', color: 'bg-amber-100 text-amber-800 border-amber-300', reason: 'Batteries leach heavy metals into soil and can spark landfill fires — certified hubs recover zinc and manganese.' },
+  { name: 'Cardboard Box', bin: 'Recycling', color: 'bg-emerald-100 text-emerald-800 border-emerald-300', reason: 'Recycled fibers cut pulp demand and landfill volume, saving ~0.9 kg CO₂e per kg.' },
+  { name: 'Plastic Bag', bin: 'Store Drop-off', color: 'bg-sky-100 text-sky-800 border-sky-300', reason: 'Film plastic jams sorting machinery, but grocery store take-back programs can pelletize it into composite lumber.' },
+  { name: 'Broken Electronics', bin: 'E-Waste Drop-off', color: 'bg-amber-100 text-amber-800 border-amber-300', reason: 'Circuit boards contain gold, copper, and rare earths — urban mining recovers them at a fraction of virgin mining emissions.' },
+  { name: 'Food Scraps', bin: 'Compost', color: 'bg-lime-100 text-lime-800 border-lime-400', reason: 'Landfilled food waste rots anaerobically into methane, 28× more potent than CO₂; composting avoids it entirely.' },
+  { name: 'Greasy Pizza Box', bin: 'Compost', color: 'bg-lime-100 text-lime-800 border-lime-400', reason: 'Grease binds to paper fibers and ruins recycling batches — the organic fraction belongs in compost.' },
+  { name: 'Paper (clean office)', bin: 'Recycling', color: 'bg-emerald-100 text-emerald-800 border-emerald-300', reason: 'Each tonne of recycled paper saves ~17 trees and roughly 4,000 kWh of pulping energy.' },
+  { name: 'Tin / Steel Can', bin: 'Recycling', color: 'bg-emerald-100 text-emerald-800 border-emerald-300', reason: 'Steel is magnetic and infinitely recyclable — recycled cans cut smelting energy demand by ~60%.' },
+  { name: 'Aerosol Can (empty)', bin: 'Recycling', color: 'bg-emerald-100 text-emerald-800 border-emerald-300', reason: 'Fully emptied steel or aluminum aerosols are safe to recycle; residual propellant would contaminate the stream.' },
+  { name: 'Clothing (wearable)', bin: 'Donation / Textile Bin', color: 'bg-violet-100 text-violet-800 border-violet-300', reason: 'Textile production is carbon-intensive (~15 kg CO₂e per shirt) — reuse avoids nearly all of it.' },
+  { name: 'Ceramic Mug (broken)', bin: 'General Waste', color: 'bg-slate-100 text-slate-600 border-slate-300', reason: 'Ceramic melts at a different temperature than bottle glass and ruins glass recycling furnaces.' }
+];
+function renderGuide(filter){
+  const q = (filter || '').toLowerCase();
+  const list = guide.filter(g => g.name.toLowerCase().includes(q) || g.bin.toLowerCase().includes(q));
+  const grid = document.getElementById('guide-grid');
+  document.getElementById('search-count').textContent = list.length + ' item' + (list.length===1?'':'s') + ' found';
+  grid.innerHTML = list.map(g => `
+    <div class="border border-slate-200 bg-white rounded-2xl p-5 fade-up">
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <p class="font-extrabold text-emerald-950">${g.name}</p>
+        <span class="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border ${g.color}">${g.bin}</span>
+      </div>
+      <p class="text-sm text-slate-600 leading-relaxed">${g.reason}</p>
+    </div>`).join('') || '<p class="col-span-full text-slate-400 italic">No match — try "plastic", "glass", or "compost".</p>';
+}
+document.getElementById('search-input').addEventListener('input', e => renderGuide(e.target.value));
+
+/* ─────────── INIT ─────────── */
+renderRescue();
+renderGuide('');
+renderDashboard();
+lucide.createIcons();
+</script>
+</body>
+</html>
